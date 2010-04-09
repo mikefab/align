@@ -357,10 +357,12 @@ function do_text_area_stuff(){
                               
 
                        }else{
-                       	                       update_audio_time();
-                       			data = data.split("^^");
+                data = data.split("^^");
+                update_audio_time();
+
 								update_audio_player(data[0]);
 								string_of_numbers = data[2];
+
   								hash_of_line_numbers = return_hash_of_line_numbers(string_of_numbers)
                     	
                        	     	data = add_time_prefixes(data[1]);
@@ -972,7 +974,7 @@ function display_file_selects(){
 
 	document.getElementById(file_source).style.display='inline';
 	for (var i in file_sources) {
-		
+
 		if (file_source != i){
 			document.getElementById(i).style.display='none';
 		//alert('key is: ' + i + ', value is: ' + file_sources[i]);
@@ -1022,7 +1024,7 @@ function submit_file_chooser_form(file_type){
  }
 
  function update_audio_time(){
- 
+
   document.getElementById("current_audio_time").innerHTML = document.getElementById('aplayer').currentTime.toFixed(1);
 
    start_audio_timer();
