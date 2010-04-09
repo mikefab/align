@@ -8,75 +8,29 @@ print header(-charset => 'UTF-8');
 
 #@file_sources = qw(gloss nclr langnet edemo);
 
-@file_sources = qw(edemo);
-$dir_product_gloss = "C:/work/mike/scripts/gloss/product";
-$dir_product_nclr = "C:/work/mike/scripts/nclr/product";
-$dir_product_edemo = "projects/edemo/product";
-$dir_product_langnet = "C:/work/mike/scripts/langnet/product";
-$dir_audio   = "C:/www/av/uploads/audio";
-
-opendir(DIR,$dir_product_gloss);
-@files_gloss = readdir(DIR);
-splice(@files_gloss,0,2);
-
-foreach $file(@files_gloss){
-	open(F,"$dir_product_gloss/$file")|| die "$! $file";
-	undef $/;
-	$data = <F>;
-	close F;
-	$data =~s/\n//g;
-	$audio = $2 if ($data =~ /(<audio>)(.+?)(<\/audio>)/i);
-
-	$title = $2 if ($data =~ /(<title.*?>)(.+?)(<\/title>)/i);
-
-	$story_gloss{$file} = $title if ((-e "$dir_audio/$audio")&&($data =~ /<text>/));
-}
-
-opendir(DIR,$dir_product_nclr);
-@files_nclr = readdir(DIR);
-splice(@files_nclr,0,2);
-foreach $file(@files_nclr){
-	open(F,"$dir_product_nclr/$file")|| die "$! $file";
-	undef $/;
-	$data = <F>;
-	close F;
-	$data =~s/\n//g;
-	$audio = $2 if ($data =~ /(<audio>)(.+?)(<\/audio>)/i);
-	$title = $2 if ($data =~ /(<title.*?>)(.+?)(<\/title>)/i);
-	$story_nclr{$file} = $title if ((-e "$dir_audio/$audio")&&($data =~ /<text>/));
-}
+opendir(DIR,"projects");
+@projects = readdir(DIR);
+closedir DIR;
+foreach $project(@projects){
+	next if $project=~/^\./;
+	$dir_product{$project} = "projects/$project/product";
+	opendir(DIR,$dir_product{$project});
+	@$project = readdir(DIR);
 
 
+	foreach $file(@$project){
+		next if $file=~/^\./ || $file !~/\./;
+		open(F,"$dir_product{$project}/$file")|| die "$! $file";
+		undef $/;
+		$data = <F>;
+		close F;
+		$data =~s/\n//g;
+		$audio = $2 if ($data =~ /(<audio>)(.+?)(<\/audio>)/i);
+		$title = $2 if ($data =~ /(<title.*?>)(.+?)(<\/title>)/i);
+		
+$project{$project}{$file} = $title if ((-e "$dir_product{$project}/audio/$audio")&&($data =~ /<text>/));
 
-opendir(DIR,$dir_product_edemo);
-
-foreach $file(readdir DIR){
-	next if $file=~/^\./;
-	open(F,"$dir_product_edemo/$file")|| die "$! $file";
-	undef $/;
-	$data = <F>;
-	close F;
-	$data =~s/\n//g;
-	$audio = $2 if ($data =~ /(<audio>)(.+?)(<\/audio>)/i);
-	$title = $2 if ($data =~ /(<title.*?>)(.+?)(<\/title>)/i);
-	$story_edemo{$file} = $title if ((-e "$dir_product_edemo/audio/$audio")&&($data =~ /<text>/));	
-}
-
-opendir(DIR,$dir_product_langnet);
-@files_langnet = readdir(DIR);
-splice(@files_langnet,0,2);
-foreach $file(@files_langnet){
-
-	open(F,"$dir_product_langnet/$file")|| die "$! $file";
-	undef $/;
-	$data = <F>;
-	close F;
-	$data =~s/\n//g;
-	$audio = $2 if ($data =~ /(<audio>)(.+?)(<\/audio>)/i);
-	$title = $2 if ($data =~ /(<title.*?>)(.+?)(<\/title>)/i);
-
-	$story_langnet{$file} = $title if ((-e "$dir_audio/$audio")&&($data =~ /<text>/));	
-	
+	}
 
 }
 
@@ -113,8 +67,9 @@ print <<END;
 var file_sources = new Array();
 END
 
-for(@file_sources){
-	print qq(file_sources["files_$_"] = "$_";\n)
+for(@projects){
+	next if $_=~/^\./ ;
+	print qq(file_sources["$_"] = "$_";\n)
 }
 
 print <<END;
@@ -294,64 +249,29 @@ print <<END;
  
 		<br>
 		<select id = "file_source" name "file_source" onChange = "document.getElementById('source_name').value = this.value;display_file_selects(); ">
-
 			<option value = "">Select a source</option>		
-			<option value = "files_edemo">Demonstration</option>
-			<option value = "files_gloss">Gloss</option>
-			<option value = "files_langnet">Langnet</option>
-			<option value = "files_nclr"> NCLRC</option>
-
-
-
-
-			</select>
-
-
-		<select id = "files_gloss"  style = "display:none;" name = "files_gloss"  onChange = "update_file_name('files_gloss'); submit_file_chooser_form('form_text_chooser');">
 END
 
-		print qq(<option>Select a story<\/option selected>);
-		for(keys%story_gloss){
-			print qq(<option value = "$_">$story_gloss{$_}</option>);
-		}
+for(@projects){
+	next if $_=~/^\./;
+	print qq(<option value = "$_">$_</option>);
+}
+print qq(</select>);
 
-print <<END;	
-		</select>
-		<select id = "files_langnet"  style = "display:none;" name = "files_langnet"  onChange = "update_file_name('files_langnet'); submit_file_chooser_form('form_text_chooser');">
-END
-		print qq(<option>Select a story<\/option selected>);
-		for(keys%story_langnet){
-			print qq(<option value = "$_">$story_langnet{$_}</option>);
-		}
+foreach $project(@projects){
+	next if $project=~/^\./;
 
-print <<END;	
-
-	</select>
-
-		<select id = "files_nclr" name = "files_nclr" style = "display:none;" onChange = "update_file_name('files_nclr'); submit_file_chooser_form('form_text_chooser');">
-END
-
-		
+print qq(<select id = "$project"  style = "display:none;" name = "$project"  onChange = "update_file_name('$project'); submit_file_chooser_form('form_text_chooser');">);
 
 		print qq(<option>Select a story<\/option selected>);
-		for(keys%story_nclr){
-			print qq(<option value = "$_">$story_nclr{$_}</option>);
+		for(@$project){
+			next if $_=~/^\./ || $_!~/\./;
+			print qq(<option value = "$_">$project{$project}{$_}</option>);
 		}
-
+print qq(</select>);
+}
 print <<END;	
-	</select>
-		<select id = "files_edemo"  style = "display:none;" name = "files_edemo"  onChange = "update_file_name('files_edemo'); submit_file_chooser_form('form_text_chooser');">
-END
 
-		
-
-		print qq(<option>Select a story<\/option selected>);
-		for(keys%story_edemo){
-			print qq(<option value = "$_">$story_edemo{$_}</option>);
-		}
-
-print <<END;	
-</select>	
  <input type = "hidden" id = "file_name" name = "file_name">
  <input type = "hidden" id = "source_name" name = "source_name">
 
