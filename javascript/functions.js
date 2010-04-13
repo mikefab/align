@@ -43,8 +43,7 @@ function get_pos_for_line_number3(line_num){ //experimenting. Used with return_l
         filter = "^(.*\\n){" + line_num +"}";
         pattern = new RegExp(filter,"mg");
         thing = text.value.match(pattern);
- 
-        return(thing[0].length);
+ 	       return(thing[0].length);
 }
 
 function test_line_has_content(line_num){
@@ -99,6 +98,7 @@ function get_current_line_of_text(line_num){
 }
 
 function return_start_end_time_of_line(target_line){
+
 	    current_start_finish= target_line.match(/^(.{2,3}\..{2,3})(:)(.{2,3}\..{2,3})(\:\:)/);
 	    current_start_finish[0]=current_start_finish[0].replace(/\:\:$/,"");
 		return current_start_finish = current_start_finish[0].split(/\:/);
